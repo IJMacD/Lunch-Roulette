@@ -40,21 +40,16 @@
         display: none;
       }
       .container {
-        height: 100%;
+        height: 99%;
         width: 100%;
       }
       .key {
-        display: inline-block;
         height: 100%;
         padding: 10px;
-        vertical-align: top;
-        width: 29%;
       }
       .wheel {
-        display: inline-block;
         height: 100%;
         position: relative;
-        width: 70%;
       }
       h1 {
         color: white;
@@ -90,17 +85,34 @@
         padding: 5px;
         width: 100%;
       }
+      @media (min-width: 768px){
+        .key {
+          display: inline-block;
+          height: 100%;
+          margin-left: -100%;
+          padding: 10px;
+          vertical-align: top;
+          width: 30%;
+        }
+        .wheel {
+          display: inline-block;
+          height: 100%;
+          margin-left: 30%;
+          position: relative;
+          width: 69%;
+        }
+      }
     </style>
   </head>
   <body>
     <div class="container">
+      <div class="wheel">
+        <canvas id="wheelcanvas"></canvas>
+      </div>
       <div class="key">
         <h1>Lunch Roulette</h1>
         <ul id="restaurant-list"></ul>
         <input id="restaurant-add" type="text" placeholder="Add restaurant">
-      </div>
-      <div class="wheel">
-        <canvas id="wheelcanvas"></canvas>
       </div>
     </div>
     <audio id="ball-sound" src="ball.mp3" preload="auto"></audio>
@@ -165,7 +177,7 @@
 
       function calculateSegments(){
         numRestaurants = restaraunts.length;
-        segmentsPerChoice = Math.floor(ROULETTE_SEGMENTS / numRestaurants);
+        segmentsPerChoice = Math.round(ROULETTE_SEGMENTS / numRestaurants);
         numSegments = segmentsPerChoice * numRestaurants;
         arc = Math.PI * 2 / numRestaurants;
       }
