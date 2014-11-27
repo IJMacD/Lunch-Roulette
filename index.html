@@ -45,7 +45,7 @@
       }
       .key {
         height: 100%;
-        padding: 10px;
+        padding: 20px;
       }
       .wheel {
         height: 100%;
@@ -72,6 +72,10 @@
       #restaurant-list li:hover {
         background: rgba(0, 255, 0, 0.8);
       }
+      #restaurant-list li.selected {
+        background: rgba(255,255,0,0.8);
+        color: rgb(53,53,53);
+      }
       #restaurant-list li.removed {
         text-decoration: line-through;
         background: rgba(255,0,0,0.5);
@@ -90,7 +94,6 @@
           display: inline-block;
           height: 100%;
           margin-left: -100%;
-          padding: 10px;
           vertical-align: top;
           width: 30%;
         }
@@ -120,7 +123,7 @@
       var ROULETTE_SEGMENTS = 37;
       var restaraunts = ["源記燒味", "泰樂廚", "金田長壽司", "五穀豐收",
                        "座雲吞麵", "泰屋", "麵包新語", "Home Stay",
-                       "漢城美食"];
+                       "漢城美食", "富都茶餐廳"];
 
       var numRestaurants,
           segmentsPerChoice,
@@ -244,6 +247,21 @@
         window.addEventListener("resize", calculateSize);
       }
 
+      function selectListItem(restaurant){
+        [].forEach.call(list.children, function(el){
+          if(el.innerText === restaurant){
+            el.className = "selected";
+            return false;
+          }
+        });
+      }
+
+      function clearSelectedListItems(){
+        [].forEach.call(document.getElementsByClassName("selected"), function(el){
+          el.className = "";
+        });
+      }
+
       function draw() {
         drawRouletteWheel();
       }
@@ -318,7 +336,7 @@
               ctx.stroke();
 
               ctx.lineWidth = 1;
-              ctx.strokeStyle = "white";
+              ctx.strokeStyle = "rgba(205,205,205,1)";
               ctx.fillStyle = "black";
               ctx.translate(cX + Math.cos(angle + arc / 2) * textRadius, cY + Math.sin(angle + arc / 2) * textRadius);
               ctx.rotate(angle + arc / 2 + Math.PI / 2);
@@ -434,6 +452,7 @@
         {
           requestAnimationFrame(rotateWheel);
         }
+        clearSelectedListItems();
         spinAngleStart = Math.random() * 10 + 10;
         spinStart = 0;
         spinTime = 0;
@@ -470,12 +489,13 @@
         ctx.fillStyle = "black";
         ctx.shadowBlur = 1;
         ctx.shadowColor   = "rgb(220,220,220)";
-        ctx.strokeStyle = "white";
+        ctx.strokeStyle = "rgb(205,205,205)";
         ctx.lineWidth = 1;
         var text = restaraunts[index]
         ctx.strokeText(text, cX - ctx.measureText(text).width / 2, cY + 10);
         ctx.fillText(text, cX - ctx.measureText(text).width / 2, cY + 10);
         ctx.restore();
+        selectListItem(text);
       }
 
       function easeOut(t, b, c, d) {
