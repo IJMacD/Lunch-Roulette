@@ -34,10 +34,14 @@
         position: absolute;
         width: 100%;
       }
+      audio {
+        display: none;
+      }
     </style>
   </head>
   <body>
     <canvas id="wheelcanvas"></canvas>
+    <audio id="ball-sound" src="ball.mp3" preload="auto"></audio>
     <script>
       var ROULETTE_SEGMENTS = 37;
       var restaraunts = ["源記燒味", "泰樂廚", "金田長壽司", "五穀豐收",
@@ -289,7 +293,11 @@
         spinStart = 0;
         spinTime = 0;
         spinTimeTotal = Math.random() * 6 + 8 * 1000;
-        requestAnimationFrame(rotateWheel)
+        audio = document.getElementById("ball-sound");
+        if(audio.duration){
+          audio.currentTime = audio.duration - spinTimeTotal / 1000;
+          audio.play();
+        }
       }
 
       function rotateWheel(time) {
