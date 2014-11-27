@@ -14,6 +14,21 @@
       body {
         height: 100%;
       }
+      body {
+        background:
+        radial-gradient(hsl(0, 100%, 27%) 4%, hsl(0, 100%, 18%) 9%, hsla(0, 100%, 20%, 0) 9%) 0 0,
+        radial-gradient(hsl(0, 100%, 27%) 4%, hsl(0, 100%, 18%) 8%, hsla(0, 100%, 20%, 0) 10%) 50px 50px,
+        radial-gradient(hsla(0, 100%, 30%, 0.8) 20%, hsla(0, 100%, 20%, 0)) 50px 0,
+        radial-gradient(hsla(0, 100%, 30%, 0.8) 20%, hsla(0, 100%, 20%, 0)) 0 50px,
+        radial-gradient(hsla(0, 100%, 20%, 1) 35%, hsla(0, 100%, 20%, 0) 60%) 50px 0,
+        radial-gradient(hsla(0, 100%, 20%, 1) 35%, hsla(0, 100%, 20%, 0) 60%) 100px 50px,
+        radial-gradient(hsla(0, 100%, 15%, 0.7), hsla(0, 100%, 20%, 0)) 0 0,
+        radial-gradient(hsla(0, 100%, 15%, 0.7), hsla(0, 100%, 20%, 0)) 50px 50px,
+        linear-gradient(45deg, hsla(0, 100%, 20%, 0) 49%, hsla(0, 100%, 0%, 1) 50%, hsla(0, 100%, 20%, 0) 70%) 0 0,
+        linear-gradient(-45deg, hsla(0, 100%, 20%, 0) 49%, hsla(0, 100%, 0%, 1) 50%, hsla(0, 100%, 20%, 0) 70%) 0 0;
+        background-color: #300;
+        background-size: 100px 100px;
+      }
       canvas {
         height: 100%;
         position: absolute;
@@ -24,11 +39,14 @@
   <body>
     <canvas id="wheelcanvas"></canvas>
     <script>
+      var ROULETTE_SEGMENTS = 37;
       var restaraunts = ["源記燒味", "泰樂廚", "金田長壽司", "五穀豐收",
                        "座雲吞麵", "泰屋", "麵包新語", "Home Stay",
                        "漢城美食"];
 
-      var numRestaurants = restaraunts.length;
+      var numRestaurants = restaraunts.length,
+          segmentsPerChoice = Math.floor(ROULETTE_SEGMENTS / numRestaurants),
+          numSegments = segmentsPerChoice * numRestaurants;
       var startAngle = 0;
       var arc = Math.PI * 2 / numRestaurants;
 
@@ -88,61 +106,189 @@
       function drawRouletteWheel() {
         var canvas = document.getElementById("wheelcanvas");
         if (canvas.getContext) {
-          var outsideRadius = 0.4 * relevantSize;
-          var textRadius = 0.32 * relevantSize;
-          var insideRadius = 0 * relevantSize;
+          var woodRadius =      0.45 * relevantSize,
+              textRadius =      0.40 * relevantSize,
+              outsideRadius =   0.38 * relevantSize,
+              insideRadius =    0.32 * relevantSize,
+              innerWoodRadius = 0.26 * relevantSize,
+              ornamentRadius =  0.10 * relevantSize,
+              segmentArc = arc / segmentsPerChoice;
 
           ctx = canvas.getContext("2d");
           ctx.clearRect(0,0,canvasWidth,canvasHeight);
 
+          // Wood gradient
+          var woodGradient = ctx.createLinearGradient(0,0,0,woodRadius*2);
+          woodGradient.addColorStop(0, '#82390F');
+          woodGradient.addColorStop(1, '#280E01');
 
-          ctx.strokeStyle = "black";
+          // Wood
+          ctx.fillStyle = woodGradient;
+          ctx.lineWidth = 4;
+          ctx.strokeStyle = "#280E01";
+          ctx.beginPath();
+          ctx.arc(cX, cY, woodRadius, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.fill();
+
+          // Ball slots
+          ctx.fillStyle = "green";
+          ctx.beginPath();
+          ctx.arc(cX, cY, insideRadius, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.strokeStyle = "rgba(255,255,255,0.6)";
           ctx.lineWidth = 2;
 
           ctx.font = 'bold 20px sans-serif';
 
-          for(var i = 0; i < numRestaurants; i++) {
-            var angle = startAngle + i * arc;
-            ctx.fillStyle = "hsl(" + rtod(i * arc) + ", 80%, 50%)";
+          for(var i = 0; i < numSegments; i++) {
+            var angle = startAngle + i * segmentArc;
+            if(i == 0){
+              ctx.fillStyle = "green";
+            }
+            else if(i % 2 == 1){
+              ctx.fillStyle = "red";
+            }
+            else {
+              ctx.fillStyle = "black";
+            }
 
             ctx.beginPath();
-            ctx.arc(cX, cY, outsideRadius, angle, angle + arc, false);
-            ctx.arc(cX, cY, insideRadius, angle + arc, angle, true);
-            ctx.stroke();
+            ctx.arc(cX, cY, outsideRadius, angle, angle + segmentArc, false);
+            ctx.arc(cX, cY, insideRadius, angle + segmentArc, angle, true);
             ctx.fill();
+            ctx.stroke();
 
-            ctx.save();
-            ctx.lineWidth = 1;
-            ctx.strokeStyle = "white";
-            ctx.fillStyle = "black";
-            ctx.translate(cX + Math.cos(angle + arc / 2) * textRadius, cY + Math.sin(angle + arc / 2) * textRadius);
-            ctx.rotate(angle + arc / 2 + Math.PI / 2);
-            var text = restaraunts[i];
-            ctx.strokeText(text, -ctx.measureText(text).width / 2, 0);
-            ctx.fillText(text, -ctx.measureText(text).width / 2, 0);
-            ctx.restore();
+            if(i % segmentsPerChoice == 0){
+
+              ctx.save();
+
+              // Slot dividers
+              ctx.strokeStyle = "white";
+              ctx.lineWidth = 2;
+              ctx.beginPath();
+              ctx.moveTo(cX + Math.cos(angle) * insideRadius, cY + Math.sin(angle) * insideRadius);
+              ctx.lineTo(cX + Math.cos(angle) * innerWoodRadius, cY + Math.sin(angle) * innerWoodRadius);
+              ctx.stroke();
+
+              ctx.lineWidth = 1;
+              ctx.strokeStyle = "white";
+              ctx.fillStyle = "black";
+              ctx.translate(cX + Math.cos(angle + arc / 2) * textRadius, cY + Math.sin(angle + arc / 2) * textRadius);
+              ctx.rotate(angle + arc / 2 + Math.PI / 2);
+              var index = Math.floor(i / segmentsPerChoice),
+                  text = restaraunts[index];
+              ctx.strokeText(text, -ctx.measureText(text).width / 2, 0);
+              ctx.fillText(text, -ctx.measureText(text).width / 2, 0);
+
+              ctx.restore();
+            }
           }
 
-          //Arrow
-          ctx.fillStyle = "black";
+          // Wood
+          ctx.fillStyle = woodGradient;
           ctx.beginPath();
-          ctx.moveTo(cX - 4, cY - (outsideRadius + 5));
-          ctx.lineTo(cX + 4, cY - (outsideRadius + 5));
-          ctx.lineTo(cX + 4, cY - (outsideRadius - 5));
-          ctx.lineTo(cX + 9, cY - (outsideRadius - 5));
-          ctx.lineTo(cX + 0, cY - (outsideRadius - 13));
-          ctx.lineTo(cX - 9, cY - (outsideRadius - 5));
-          ctx.lineTo(cX - 4, cY - (outsideRadius - 5));
-          ctx.lineTo(cX - 4, cY - (outsideRadius + 5));
+          ctx.arc(cX, cY, innerWoodRadius, 0, Math.PI * 2);
           ctx.fill();
+
+          drawCentreOrnament(ctx, angle, ornamentRadius);
+
+          //Ball
+          var spinFrac = spinTime/spinTimeTotal,
+              ballAmplitude = 10,
+              ballShakeCount = 20,
+              //ballDecay = spinFrac,
+              ballDecay = Math.pow(spinFrac-1, 2),
+              ballWobble = ballAmplitude * (1 - spinFrac)
+                * Math.sin(ballDecay * Math.PI * ballShakeCount);
+          ctx.fillStyle = "white";
+          ctx.beginPath();
+          ctx.arc(cX, cY - insideRadius + ballWobble, 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
         }
+      }
+
+      function drawCentreOrnament(ctx, angle, ornamentRadius){
+        // Centre Ornament
+        var q1_4 = Math.PI / 2,
+        q1_8 = Math.PI / 4,
+        q1_32 = Math.PI / 16,
+        a1 = q1_8,
+        a2 = q1_4 - 0.025,
+        a3 = q1_4 + 0.025,
+        r1 = 0.1 * ornamentRadius
+        r2 = ornamentRadius,
+        r3 = ornamentRadius,
+        rb1 = 0.2 * ornamentRadius,
+        rb2 = 0.1 * ornamentRadius,
+        th = angle;
+
+        // Gold gradient
+        var goldGradient = ctx.createLinearGradient(0, cY - ornamentRadius, 0, cY + ornamentRadius);
+        goldGradient.addColorStop(0, '#FFD700');
+        goldGradient.addColorStop(1, '#A88900');
+
+        ctx.fillStyle = goldGradient;
+        ctx.beginPath();
+
+        ctx.moveTo(cX + Math.cos(th + a1) * r1, cY + Math.sin(th + a1) * r1);
+        ctx.lineTo(cX + Math.cos(th + a2) * r2, cY + Math.sin(th + a2) * r2);
+        ctx.lineTo(cX + Math.cos(th + a3) * r3, cY + Math.sin(th + a3) * r3);
+
+        th += q1_4;
+
+        ctx.lineTo(cX + Math.cos(th + a1) * r1, cY + Math.sin(th + a1) * r1);
+        ctx.lineTo(cX + Math.cos(th + a2) * r2, cY + Math.sin(th + a2) * r2);
+        ctx.lineTo(cX + Math.cos(th + a3) * r3, cY + Math.sin(th + a3) * r3);
+
+        th += q1_4;
+
+        ctx.lineTo(cX + Math.cos(th + a1) * r1, cY + Math.sin(th + a1) * r1);
+        ctx.lineTo(cX + Math.cos(th + a2) * r2, cY + Math.sin(th + a2) * r2);
+        ctx.lineTo(cX + Math.cos(th + a3) * r3, cY + Math.sin(th + a3) * r3);
+
+        th += q1_4;
+
+        ctx.lineTo(cX + Math.cos(th + a1) * r1, cY + Math.sin(th + a1) * r1);
+        ctx.lineTo(cX + Math.cos(th + a2) * r2, cY + Math.sin(th + a2) * r2);
+        ctx.lineTo(cX + Math.cos(th + a3) * r3, cY + Math.sin(th + a3) * r3);
+
+        ctx.closePath();
+
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(cX, cY, rb1, 0, Math.PI * 2);
+        ctx.fill();
+
+        th = angle;
+        ctx.beginPath();
+        ctx.arc(cX + Math.cos(th) * r3, cY + Math.sin(th) * r3, rb2, 0, Math.PI * 2);
+        ctx.fill();
+
+        th += q1_4;
+        ctx.beginPath();
+        ctx.arc(cX + Math.cos(th) * r3, cY + Math.sin(th) * r3, rb2, 0, Math.PI * 2);
+        ctx.fill();
+
+        th += q1_4;
+        ctx.beginPath();
+        ctx.arc(cX + Math.cos(th) * r3, cY + Math.sin(th) * r3, rb2, 0, Math.PI * 2);
+        ctx.fill();
+
+        th += q1_4;
+        ctx.beginPath();
+        ctx.arc(cX + Math.cos(th) * r3, cY + Math.sin(th) * r3, rb2, 0, Math.PI * 2);
+        ctx.fill();
       }
 
       function spin() {
         spinAngleStart = Math.random() * 10 + 10;
         spinStart = 0;
         spinTime = 0;
-        spinTimeTotal = Math.random() * 3 + 4 * 1000;
+        spinTimeTotal = Math.random() * 6 + 8 * 1000;
         requestAnimationFrame(rotateWheel)
       }
 
@@ -162,11 +308,12 @@
       }
 
       function stopRotateWheel() {
-        var degrees = startAngle * 180 / Math.PI + 90;
-        var arcd = arc * 180 / Math.PI;
+        var degrees = rtod(startAngle) + 90;
+        var arcd = rtod(arc);
         var index = Math.floor((360 - degrees % 360) / arcd);
         ctx.save();
         ctx.font = 'bold 30px sans-serif';
+        ctx.fillStyle = "black";
         ctx.shadowOffsetX = -1;
         ctx.shadowOffsetY = -1;
         //ctx.shadowColor   = "rgb(220,220,220)";
