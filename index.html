@@ -146,7 +146,10 @@
           cY,
 
           list,
-          restaurantAdd;
+          restaurantAdd,
+
+          results = {},
+          completeCallback;
 
       init();
 
@@ -162,6 +165,33 @@
         calculateSize();
 
         addEvents();
+      }
+
+      function test(){
+        var i = 0,
+            count = 100;
+
+        setCompleteCallback(function(result){
+          i++;
+          if(results[result]){
+            results[result]++;
+          }
+          else {
+            results[result] = 1;
+          }
+          if(i < count){
+            spin();
+          }
+          else {
+            console.log(results);
+          }
+        });
+
+        spin();
+      }
+
+      function setCompleteCallback(fn){
+        completeCallback = fn;
       }
 
       function populateList(){
@@ -502,6 +532,9 @@
         ctx.fillText(text, cX - ctx.measureText(text).width / 2, cY + 10);
         ctx.restore();
         selectListItem(text);
+        if(completeCallback){
+          completeCallback(text);
+        }
       }
 
       function easeOut(t, b, c, d) {
