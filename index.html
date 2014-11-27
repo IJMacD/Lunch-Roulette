@@ -31,11 +31,11 @@
       var numRestaurants = restaraunts.length;
       var startAngle = 0;
       var arc = Math.PI * 2 / numRestaurants;
-      var spinTimeout = null;
 
       var spinArcStart = 10;
       var spinTime = 0;
-      var spinTimeTotal = 0;
+      var spinTimeTotal = 0,
+          spinStart = 0;
 
       var ctx;
 
@@ -140,25 +140,28 @@
 
       function spin() {
         spinAngleStart = Math.random() * 10 + 10;
+        spinStart = 0;
         spinTime = 0;
         spinTimeTotal = Math.random() * 3 + 4 * 1000;
-        rotateWheel();
+        requestAnimationFrame(rotateWheel)
       }
 
-      function rotateWheel() {
-        spinTime += 16;
+      function rotateWheel(time) {
+        if(!spinStart) {
+          spinStart = time;
+        }
+        spinTime = time - spinStart;
         if(spinTime >= spinTimeTotal) {
           stopRotateWheel();
           return;
         }
         var spinAngle = spinAngleStart - easeOut(spinTime, 0, spinAngleStart, spinTimeTotal);
-        startAngle += (spinAngle * Math.PI / 180);
+        startAngle += dtor(spinAngle);
         drawRouletteWheel();
-        spinTimeout = setTimeout('rotateWheel()', 30);
+        requestAnimationFrame(rotateWheel);
       }
 
       function stopRotateWheel() {
-        clearTimeout(spinTimeout);
         var degrees = startAngle * 180 / Math.PI + 90;
         var arcd = arc * 180 / Math.PI;
         var index = Math.floor((360 - degrees % 360) / arcd);
@@ -179,6 +182,10 @@
         var ts = (t/=d)*t;
         var tc = ts*t;
         return b+c*(tc + -3*ts + 3*t);
+      }
+
+      function dtor(degrees){
+        return degrees * Math.PI / 180;
       }
 
       function rtod(radians){
