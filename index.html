@@ -3,10 +3,11 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Roulette Wheel</title>
+    <title>Lunch Roulette</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
       * {
+        box-sizing: border-box;
         margin: 0;
         padding: 0;
       }
@@ -28,6 +29,7 @@
         linear-gradient(-45deg, hsla(0, 100%, 20%, 0) 49%, hsla(0, 100%, 0%, 1) 50%, hsla(0, 100%, 20%, 0) 70%) 0 0;
         background-color: #300;
         background-size: 100px 100px;
+        font-family: sans-serif;
       }
       canvas {
         height: 100%;
@@ -37,10 +39,70 @@
       audio {
         display: none;
       }
+      .container {
+        height: 100%;
+        width: 100%;
+      }
+      .key {
+        display: inline-block;
+        height: 100%;
+        padding: 10px;
+        vertical-align: top;
+        width: 29%;
+      }
+      .wheel {
+        display: inline-block;
+        height: 100%;
+        position: relative;
+        width: 70%;
+      }
+      h1 {
+        color: white;
+        margin-bottom: 10px;
+        text-shadow: 0 0 5px black;
+      }
+      #restaurant-list {
+        list-style: none;
+      }
+      #restaurant-list li {
+        background: rgba(0, 255, 3, 0.49);
+        border-radius: 3px;
+        color: white;
+        cursor: pointer;
+        font-size: 24px;
+        margin: 4px;
+        padding: 4px;
+        transition: 0.2s all;
+      }
+      #restaurant-list li:hover {
+        background: rgba(0, 255, 0, 0.8);
+      }
+      #restaurant-list li.removed {
+        text-decoration: line-through;
+        background: rgba(255,0,0,0.5);
+      }
+      #restaurant-list li.removed:hover {
+        background: rgba(255,0,0,0.8);
+      }
+      #restaurant-add {
+        border-radius: 5px;
+        font-size: 24px;
+        padding: 5px;
+        width: 100%;
+      }
     </style>
   </head>
   <body>
-    <canvas id="wheelcanvas"></canvas>
+    <div class="container">
+      <div class="key">
+        <h1>Lunch Roulette</h1>
+        <ul id="restaurant-list"></ul>
+        <input id="restaurant-add" type="text" placeholder="Add restaurant">
+      </div>
+      <div class="wheel">
+        <canvas id="wheelcanvas"></canvas>
+      </div>
+    </div>
     <audio id="ball-sound" src="ball.mp3" preload="auto"></audio>
     <script>
       var ROULETTE_SEGMENTS = 37;
@@ -48,11 +110,11 @@
                        "座雲吞麵", "泰屋", "麵包新語", "Home Stay",
                        "漢城美食"];
 
-      var numRestaurants = restaraunts.length,
-          segmentsPerChoice = Math.floor(ROULETTE_SEGMENTS / numRestaurants),
-          numSegments = segmentsPerChoice * numRestaurants;
-      var startAngle = 0;
-      var arc = Math.PI * 2 / numRestaurants;
+      var numRestaurants,
+          segmentsPerChoice,
+          numSegments,
+          arc,
+          startAngle = 0;
 
       var spinArcStart = 10;
       var spinTime = 0;
@@ -66,16 +128,64 @@
           canvasHeight,
           relevantSize,
           cX,
-          cY;
+          cY,
+
+          list,
+          restaurantAdd;
 
       init();
 
       function init(){
         canvas = document.getElementById("wheelcanvas");
+        list = document.getElementById("restaurant-list");
+        restaurantAdd = document.getElementById("restaurant-add");
+
+        populateList();
+
+        calculateSegments();
 
         calculateSize();
 
         addEvents();
+      }
+
+      function populateList(){
+        restaraunts.forEach(addRestaurant);
+      }
+
+      function populateRestaurants(){
+        restaraunts.length = 0;
+        [].forEach.call(list.children, function(el){
+          if(el.className !== "removed"){
+            restaraunts.push(el.innerText);
+          }
+        });
+        calculateSegments();
+      }
+
+      function calculateSegments(){
+        numRestaurants = restaraunts.length;
+        segmentsPerChoice = Math.floor(ROULETTE_SEGMENTS / numRestaurants);
+        numSegments = segmentsPerChoice * numRestaurants;
+        arc = Math.PI * 2 / numRestaurants;
+      }
+
+      function addRestaurant(restaurant){
+        var el = document.createElement("li");
+
+        el.innerText = restaurant;
+        list.appendChild(el);
+
+        el.addEventListener("click", function(){
+          if(el.className === "removed"){
+            el.className = "";
+          }
+          else {
+            el.className = "removed";
+          }
+          populateRestaurants();
+          draw();
+        });
       }
 
       function calculateSize(){
@@ -99,6 +209,25 @@
       function addEvents(){
 
         canvas.addEventListener("click", spin);
+
+        restaurantAdd.addEventListener("blur", addFromInput);
+
+        restaurantAdd.addEventListener("keypress", function(event){
+          // press Enter
+          if(event.keyCode == 13){
+            addFromInput();
+          }
+        });
+
+        function addFromInput(){
+          var val = restaurantAdd.value;
+          if(val !== ""){
+            addRestaurant(val);
+            restaurantAdd.value = "";
+            populateRestaurants();
+            draw();
+          }
+        }
 
         window.addEventListener("resize", calculateSize);
       }
@@ -296,7 +425,7 @@
         spinAngleStart = Math.random() * 10 + 10;
         spinStart = 0;
         spinTime = 0;
-        spinTimeTotal = Math.random() * 6 + 8 * 1000;
+        spinTimeTotal = Math.random() * 10 + 8 * 1000;
         audio = document.getElementById("ball-sound");
         if(audio.duration){
           audio.currentTime = audio.duration - spinTimeTotal / 1000;
@@ -325,13 +454,12 @@
         var arcd = rtod(arc);
         var index = Math.floor((360 - degrees % 360) / arcd);
         ctx.save();
-        ctx.font = 'bold 30px sans-serif';
+        ctx.font = 'bold 72px sans-serif';
         ctx.fillStyle = "black";
-        ctx.shadowOffsetX = -1;
-        ctx.shadowOffsetY = -1;
-        //ctx.shadowColor   = "rgb(220,220,220)";
+        ctx.shadowBlur = 1;
+        ctx.shadowColor   = "rgb(220,220,220)";
         ctx.strokeStyle = "white";
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 1;
         var text = restaraunts[index]
         ctx.strokeText(text, cX - ctx.measureText(text).width / 2, cY + 10);
         ctx.fillText(text, cX - ctx.measureText(text).width / 2, cY + 10);
