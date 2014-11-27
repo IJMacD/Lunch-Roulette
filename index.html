@@ -357,6 +357,7 @@
 
           drawCentreOrnament(ctx, angle, ornamentRadius);
 
+
           //Ball
           var spinFrac = spinTime/spinTimeTotal,
               ballAmplitude = 10,
@@ -364,10 +365,15 @@
               //ballDecay = spinFrac,
               ballDecay = Math.pow(spinFrac-1, 2),
               ballWobble = ballAmplitude * (1 - spinFrac)
-                * Math.sin(ballDecay * Math.PI * ballShakeCount);
-          ctx.fillStyle = "white";
+                * Math.sin(ballDecay * Math.PI * ballShakeCount),
+              ballY = cY - insideRadius + (ballWobble || 0),
+              // Ball gradient
+              ballGradient = ctx.createLinearGradient(0,ballY - 5,0,ballY + 5);
+          ballGradient.addColorStop(0, 'rgb(255,255,255)');
+          ballGradient.addColorStop(1, 'rgb(165,165,165)');
+          ctx.fillStyle = ballGradient;
           ctx.beginPath();
-          ctx.arc(cX, cY - insideRadius + ballWobble, 5, 0, Math.PI * 2);
+          ctx.arc(cX, ballY, 5, 0, Math.PI * 2);
           ctx.fill();
           ctx.stroke();
         }
