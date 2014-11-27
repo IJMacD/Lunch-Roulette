@@ -289,6 +289,10 @@
       }
 
       function spin() {
+        if(spinTime === 0)
+        {
+          requestAnimationFrame(rotateWheel);
+        }
         spinAngleStart = Math.random() * 10 + 10;
         spinStart = 0;
         spinTime = 0;
@@ -306,6 +310,7 @@
         }
         spinTime = time - spinStart;
         if(spinTime >= spinTimeTotal) {
+          spinTime = 0;
           stopRotateWheel();
           return;
         }
