@@ -167,11 +167,14 @@
         addEvents();
       }
 
-      function test(){
+      function test(count){
         var i = 0,
-            count = 100,
             start = Date.now(),
             duration;
+
+        if(!count){
+          count = 100;
+        }
 
         setCompleteCallback(function(result){
           i++;
@@ -187,6 +190,7 @@
           else {
             duration = (Date.now() - start) / 1000;
             console.log(duration + " sec", results);
+            clearCompleteCallback();
           }
         });
 
@@ -195,6 +199,10 @@
 
       function setCompleteCallback(fn){
         completeCallback = fn;
+      }
+
+      function clearCompleteCallback(fn){
+        completeCallback = undefined;
       }
 
       function populateList(){
