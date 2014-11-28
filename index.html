@@ -213,7 +213,7 @@
         restaraunts.length = 0;
         [].forEach.call(list.children, function(el){
           if(el.className !== "removed"){
-            restaraunts.push(el.innerText);
+            restaraunts.push(el.innerText||el.textContent);
           }
         });
         calculateSegments();
@@ -230,6 +230,7 @@
         var el = document.createElement("li");
 
         el.innerText = restaurant;
+        el.textContent = restaurant;
         list.appendChild(el);
 
         el.addEventListener("click", function(){
